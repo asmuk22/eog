@@ -1,11 +1,18 @@
-import React from 'react';
-import { ToastContainer } from 'react-toastify';
-import { MuiThemeProvider, createTheme } from '@material-ui/core/styles';
+import {
+  ApolloClient,
+  ApolloProvider,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { createTheme, MuiThemeProvider } from '@material-ui/core/styles';
+import React from 'react';
 import 'react-toastify/dist/ReactToastify.css';
-import Header from './components/Header';
 import Wrapper from './components/Wrapper';
-import NowWhat from './components/NowWhat';
+import ChartScreen from './Features/ChartScreen/ChartScreen';
 
 const theme = createTheme({
   palette: {
@@ -21,15 +28,45 @@ const theme = createTheme({
   },
 });
 
+const url = 'https://react.eogresources.com/graphql';
+
+const httpLink = new HttpLink({
+  uri: url,
+});
+
+const wsLink = new WebSocketLink({
+  uri: url.replace('https', 'wss'),
+  options: {
+    reconnect: true,
+  },
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition'
+      && definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache(),
+});
+
 const App = () => (
-  <MuiThemeProvider theme={theme}>
-    <CssBaseline />
-    <Wrapper>
-      <Header />
-      <NowWhat />
-      <ToastContainer />
-    </Wrapper>
-  </MuiThemeProvider>
+  <ApolloProvider client={client}>
+    <MuiThemeProvider theme={theme}>
+      <CssBaseline />
+      <Wrapper>
+        <ChartScreen />
+      </Wrapper>
+    </MuiThemeProvider>
+  </ApolloProvider>
 );
 
 export default App;
