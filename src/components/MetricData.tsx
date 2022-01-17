@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/core';
 import React from 'react';
-import { Measurement, Metric } from '../types';
+import { last } from 'lodash';
+import { Metric } from '../types';
 
 interface IProps {
   data: Metric[];
@@ -23,10 +24,6 @@ const useStyles = makeStyles({
   },
 });
 
-function getValue(measurements: Measurement[]) {
-  return measurements[measurements.length - 1].value;
-}
-
 const MetricData = (props: IProps) => {
   const { data, strokeColor } = props;
 
@@ -38,7 +35,7 @@ const MetricData = (props: IProps) => {
       style={{ background: strokeColor[index] }}
       key={metric}
     >
-      {metric}: {getValue(measurements)}
+      {metric}: {last(measurements)?.value}
     </div>
   );
 

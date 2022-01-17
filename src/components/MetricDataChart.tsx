@@ -49,16 +49,15 @@ function some({ metric: name, at }: Measurement) {
   );
 }
 
-function updateQuery(prev: any, { subscriptionData }: any) {
-  if (!subscriptionData.data) return prev;
-  const { getMultipleMeasurements } = prev;
+function updateQuery({ getMultipleMeasurements }: any, { subscriptionData }: any) {
+  if (!subscriptionData.data) return { getMultipleMeasurements };
 
   const { newMeasurement } = subscriptionData.data;
   if (getMultipleMeasurements?.some(some(newMeasurement))) {
     const newMeasurements = getMultipleMeasurements?.map(updateData(newMeasurement));
     return { getMultipleMeasurements: newMeasurements };
   }
-  return prev;
+  return { getMultipleMeasurements };
 }
 
 function getLines({ metric, measurements }: Metric, index: number) {
